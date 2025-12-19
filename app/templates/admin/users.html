@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Пользователи — админка{% endblock %}
+
+{% block styles %}
+<style>
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+    }
+
+    .role-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 10px;
+    }
+
+    .action-form {
+        min-width: 250px;
+    }
+
+    .search-box {
+        max-width: 300px;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+
+    .pagination .page-link {
+        border-radius: 6px;
+        margin: 0 3px;
+        border: none;
+        color: #495057;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include "components/header.html" %}
+
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Управление пользователями</h1>
+            <p class="text-muted mb-0">Все зарегистрированные пользователи системы</p>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                <i class="bi bi-person-plus me-1"></i>Добавить пользователя
+            </button>
+        </div>
+    </div>
+
+    <!-- Flash сообщения -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show mb-4">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Поиск и фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.users_list') }}" class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" name="search"
+                            placeholder="Поиск по email, имени, фамилии или телефону..." value="{{ search_query }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            Найти
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    {% if search_query %}
+                    <a href="{{ url_for('admin.users_list') }}" class="btn btn-outline-danger">
+                        <i class="bi bi-x-circle me-1"></i>Сбросить поиск
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблица пользователей -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Пользователь</th>
+                            <th>Контакт</th>
+                            <th>Роль</th>
+                            <th>Регистрация</th>
+                            <th class="pe-4">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users.items %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-3">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ user.full_name }}</div>
+                                        <small class="text-muted">ID: #{{ user.id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <div>{{ user.email }}</div>
+                                    <div class="text-muted">{{ user.phone }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if user.is_admin %}
+                                <span class="badge bg-danger role-badge">Администратор</span>
+                                {% elif user.is_hotel_owner %}
+                                <span class="badge bg-primary role-badge">Владелец отеля</span>
+                                {% else %}
+                                <span class="badge bg-secondary role-badge">Пользователь</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <div>{{ user.created_at.strftime('%d.%m.%Y') if user.created_at else '—' }}</div>
+                                    <div class="text-muted">{{ user.created_at.strftime('%H:%M') if user.created_at else
+                                        '' }}</div>
+                                </div>
+                            </td>
+                            <td class="pe-4">
+                                <div class="d-flex gap-2 action-form">
+                                    <form method="POST" action="{{ url_for('admin.set_user_role', user_id=user.id) }}"
+                                        class="d-flex gap-2 flex-grow-1">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <select name="role" class="form-select form-select-sm" {% if
+                                            user.id==current_user.id %}disabled{% endif %}>
+                                            <option value="user" {% if user.role.value=='user' %}selected{% endif %}>
+                                                Пользователь</option>
+                                            <option value="hotel_owner" {% if user.role.value=='hotel_owner'
+                                                %}selected{% endif %}>Владелец</option>
+                                            <option value="admin" {% if user.role.value=='admin' %}selected{% endif %}>
+                                                Администратор</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary" {% if
+                                            user.id==current_user.id %}disabled{% endif %}
+                                            onclick="return confirm('Изменить роль пользователя {{ user.email }}?')">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </form>
+
+                                    {% if user.id != current_user.id %}
+                                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                                        onsubmit="return confirm('Удалить пользователя {{ user.email }}? Это действие нельзя отменить.')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="bi bi-people display-4 text-muted"></i>
+                                </div>
+                                <h5 class="text-muted">Пользователи не найдены</h5>
+                                {% if search_query %}
+                                <p class="text-muted">Попробуйте изменить условия поиска</p>
+                                {% else %}
+                                <p class="text-muted">В системе пока нет пользователей</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Пагинация -->
+        {% if users.pages > 1 %}
+        <div class="card-footer">
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if users.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="{{ url_for('admin.users_list', page=users.prev_num, search=search_query) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in users.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == users.page %}active{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('admin.users_list', page=page_num, search=search_query) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if users.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="{{ url_for('admin.users_list', page=users.next_num, search=search_query) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <div class="text-center mt-2 text-muted small">
+                Показано {{ users.items|length }} из {{ users.total }} пользователей
+                {% if search_query %}
+                по запросу "{{ search_query }}"
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</main>
+
+<!-- Модальное окно добавления пользователя -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить пользователя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Для добавления нового пользователя воспользуйтесь формой регистрации на главной странице.
+                </div>
+                <p class="text-muted">
+                    Или отправьте ссылку для регистрации:
+                    <code>{{ url_for('user.register', _external=True) }}</code>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <a href="{{ url_for('user.register') }}" class="btn btn-primary" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Перейти к регистрации
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "components/footer.html" %}
+{% endblock %}

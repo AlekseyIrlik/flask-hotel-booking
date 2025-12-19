@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Доступ запрещён{% endblock %}
+
+{% block content %}
+{% include "./components/header.html" %}
+
+<main class="container py-5">
+    <div class="text-center py-5">
+        <div class="mb-3">
+            <i class="bi bi-shield-lock display-1 text-muted"></i>
+        </div>
+        <h1 class="h3 mb-3">Доступ к этой странице ограничен</h1>
+        <p class="text-muted mb-4">
+            У вас нет прав для просмотра этого раздела. Если вы считаете, что это ошибка,
+            обратитесь к администратору.
+        </p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-2"></i>На главную
+        </a>
+    </div>
+</main>
+
+{% include "./components/footer.html" %}
+{% endblock %}
+
+

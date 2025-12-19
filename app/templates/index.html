@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %} Главная {% endblock %}
+
+{% block styles %}
+<style>
+    .hero-section {
+        background-size: cover;
+        background-position: center;
+        min-height: 60vh;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        padding: 6rem 0;
+        margin: 2rem 0;
+        position: relative;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        padding: 0 1.5rem;
+    }
+
+    .hero-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        color: white;
+        line-height: 1.2;
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        font-weight: 300;
+        margin-bottom: 2.5rem;
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .hero-btn {
+        background: var(--orange);
+        color: white;
+        font-weight: var(--btn-weight);
+        padding: 1rem 2.5rem;
+        border-radius: var(--btn-radius);
+        font-size: 1.1rem;
+        transition: background var(--transition-time);
+        text-decoration: none;
+        display: inline-block;
+        border: none;
+    }
+
+    .hero-btn:hover {
+        background: var(--orange-dark);
+        color: white;
+    }
+
+    .hotel-card {
+        transition: transform var(--transition-time);
+        border: none;
+        border-radius: var(--btn-radius);
+        overflow: hidden;
+        height: 100%;
+        border: 1px solid var(--border);
+    }
+
+    .hotel-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .book-btn {
+        background: var(--orange);
+        color: white;
+        font-weight: var(--btn-weight);
+        padding: 0.5rem 1.5rem;
+        border-radius: var(--btn-radius);
+        transition: background var(--transition-time);
+        text-decoration: none;
+        display: inline-block;
+        border: none;
+    }
+
+    .book-btn:hover {
+        background: var(--orange-dark);
+        color: white;
+    }
+
+    .feature-item {
+        padding: 1.5rem;
+        border-radius: var(--btn-radius);
+        background: var(--gray-light);
+        transition: background var(--transition-time);
+    }
+
+    .feature-item:hover {
+        background: white;
+    }
+
+    .feature-item i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--orange);
+    }
+
+    .hotel-rating {
+        color: var(--orange);
+        font-weight: 600;
+    }
+
+    .hotel-price {
+        color: var(--orange);
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .all-hotels-link {
+        color: var(--orange);
+        text-decoration: none;
+        font-weight: var(--btn-weight);
+        transition: color var(--transition-time);
+    }
+
+    .all-hotels-link:hover {
+        color: var(--orange-dark);
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            min-height: 50vh;
+            padding: 4rem 0;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .hero-content {
+            padding: 0 1rem;
+        }
+
+        .hero-title {
+            font-size: 2.2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .hero-title {
+            font-size: 1.8rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include './components/header.html' %}
+
+<main class="container py-4">
+    <!-- Hero Section -->
+    <section class="hero-section" style="background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.6)),
+            url('{{ url_for('static', filename='img/hero-img.webp') }}');">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Откройте мир комфортного отдыха
+                </h1>
+                <p class="hero-subtitle">
+                    Бронируйте лучшие отели в России с гарантией лучшей цены.
+                    Более 5000 вариантов размещения по всей стране.
+                </p>
+                <a href="/catalog" class="hero-btn">
+                    <i class="bi bi-search me-2"></i>Найти отель
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="my-5">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-item text-center">
+                    <i class="bi bi-shield-check"></i>
+                    <h5 class="fw-bold mb-2">Безопасно</h5>
+                    <p class="text-muted mb-0">Все платежи защищены</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-item text-center">
+                    <i class="bi bi-cash-coin"></i>
+                    <h5 class="fw-bold mb-2">Выгодно</h5>
+                    <p class="text-muted mb-0">Лучшие цены на рынке</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-item text-center">
+                    <i class="bi bi-headset"></i>
+                    <h5 class="fw-bold mb-2">Поддержка</h5>
+                    <p class="text-muted mb-0">Помощь 24/7</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Hotels -->
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold mb-0">Популярные отели</h2>
+            <a href="{{ url_for('main.catalog') }}" class="all-hotels-link">
+                Все отели <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        {% if popular_hotels %}
+        <div class="row g-4">
+            {% for hotel in popular_hotels %}
+            <div class="col-md-4">
+                <div class="card hotel-card h-100">
+                    <img src="{{ url_for('static', filename='img/hotel.webp') }}" class="card-img-top"
+                        alt="{{ hotel.name }}" style="height: 200px; object-fit: cover;" loading="lazy" height="400">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold mb-0">{{ hotel.name }}</h5>
+                        </div>
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-geo-alt me-1"></i>{{ hotel.city }}, {{ hotel.address }}
+                        </p>
+                        {% if hotel.description %}
+                        <p class="text-muted small mb-3">
+                            {{ hotel.description|truncate(100) }}
+                        </p>
+                        {% endif %}
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                {% if hotel.rooms %}
+                                {% set min_price = hotel.rooms|map(attribute='price_per_night')|min %}
+                                <span class="hotel-price">от {{ min_price }} ₽</span>
+                                <p class="text-muted small mb-0">за ночь</p>
+                                {% else %}
+                                <span class="text-muted small">Нет номеров</span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('main.hotel_detail', hotel_id=hotel.id) }}" class="book-btn">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-building display-5 text-muted"></i>
+            <p class="text-muted mt-3 mb-0">В системе пока нет отелей. Добавьте первый отель как владелец, чтобы он
+                появился здесь.</p>
+        </div>
+        {% endif %}
+    </section>
+</main>
+
+{% include './components/footer.html' %}
+{% endblock %}

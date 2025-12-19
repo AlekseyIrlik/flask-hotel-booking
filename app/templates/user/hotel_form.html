@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+{% include './components/header.html' %}
+
+<main class="container py-5">
+    <h1 class="mb-4">{{ title }}</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.name.label }} {{ form.name(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.description.label }} {{ form.description(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.address.label }} {{ form.address(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.city.label }} {{ form.city(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.phone.label }} {{ form.phone(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.email.label }} {{ form.email(class="form-control") }}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+</main>
+
+{% include './components/footer.html' %}
+{% endblock %}

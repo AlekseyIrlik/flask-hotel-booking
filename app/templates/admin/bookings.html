@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Список бронирований{% endblock %}
+
+{% block content %}
+{% include './components/header.html' %}
+
+<main class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Бронирования</h1>
+        <div class="btn-group">
+            {% for st in statuses %}
+            <a href="{{ url_for('admin.bookings_list', status=st) }}"
+                class="btn btn-sm {% if st == current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ st.capitalize() }} ({{ status_counts[st] }})
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show mb-4">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Search Form -->
+    <form method="GET" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Поиск по email, имени или отелю"
+                value="{{ search_query }}">
+            <input type="hidden" name="status" value="{{ current_status }}">
+            <button type="submit" class="btn btn-primary">Поиск</button>
+        </div>
+    </form>
+
+    <!-- Bookings Table -->
+    {% if bookings.items %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Пользователь</th>
+                    <th>Отель / Номер</th>
+                    <th>Даты</th>
+                    <th>Гости</th>
+                    <th>Сумма</th>
+                    <th>Статус</th>
+                    <th>Создано</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings.items %}
+                <tr>
+                    <td>#{{ booking.id }}</td>
+                    <td>
+                        {{ booking.user.first_name }} {{ booking.user.last_name }}<br>
+                        <small>{{ booking.user.email }}</small>
+                    </td>
+                    <td>
+                        {{ booking.room.hotel.name }}<br>
+                        <small>{{ booking.room.name }}</small>
+                    </td>
+                    <td>
+                        {{ booking.check_in.strftime('%d.%m.%Y') }} - {{ booking.check_out.strftime('%d.%m.%Y') }}
+                    </td>
+                    <td>{{ booking.guests }}</td>
+                    <td>{{ booking.total_price }} руб.</td>
+                    <td>
+                        <span
+                            class="badge bg-{{ 'warning' if booking.status == 'pending' else 'success' if booking.status == 'confirmed' else 'danger' }}">
+                            {{ booking.status.capitalize() }}
+                        </span>
+                    </td>
+                    <td>{{ booking.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>
+                        {% if booking.status != 'confirmed' and booking.status != 'cancelled' %}
+                        <form method="POST"
+                            action="{{ url_for('admin.confirm_booking_admin', booking_id=booking.id, status=current_status) }}"
+                            class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-success">Подтвердить</button>
+                        </form>
+                        {% endif %}
+                        {% if booking.status != 'cancelled' %}
+                        <form method="POST"
+                            action="{{ url_for('admin.cancel_booking_admin', booking_id=booking.id, status=current_status) }}"
+                            class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Отменить бронирование?');">Отменить</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center">
+            {% if bookings.has_prev %}
+            <li class="page-item"><a class="page-link"
+                    href="{{ url_for('admin.bookings_list', page=bookings.prev_num, status=current_status, search=search_query) }}">Предыдущая</a>
+            </li>
+            {% endif %}
+            {% for p in bookings.iter_pages() %}
+            {% if p %}
+            <li class="page-item {% if p == bookings.page %}active{% endif %}"><a class="page-link"
+                    href="{{ url_for('admin.bookings_list', page=p, status=current_status, search=search_query) }}">{{ p
+                    }}</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            {% endfor %}
+            {% if bookings.has_next %}
+            <li class="page-item"><a class="page-link"
+                    href="{{ url_for('admin.bookings_list', page=bookings.next_num, status=current_status, search=search_query) }}">Следующая</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+    <p class="text-center text-muted">Нет бронирований по выбранным критериям.</p>
+    {% endif %}
+</main>
+
+{% include './components/footer.html' %}
+{% endblock %}

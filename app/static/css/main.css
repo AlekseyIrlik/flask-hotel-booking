@@ -1,0 +1,15 @@
+/* Библиотеки */
+@import url(./lib/bootstrap.min.css);
+@import url(./lib/bootstrap-icons/font/bootstrap-icons.min.css);
+
+/* Шрифты */
+@import url(../fonts/fonts_include.css);
+
+/* Главный файл стилей */
+@import url(./reset.css);
+@import url(./base_settings.css);
+@import url(./variables.css);
+
+/* Компоненты */
+@import url(./blocs/header.css);
+@import url(./blocs/footer.css);

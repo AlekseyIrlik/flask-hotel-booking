@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Номера в {{ hotel.name }}{% endblock %}
+
+{% block content %}
+{% include './components/header.html' %}
+
+<main class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Номера в {{ hotel.name }}</h1>
+        <a href="{{ url_for('user.create_room', hotel_id=hotel.id) }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Добавить номер
+        </a>
+    </div>
+
+    <!-- Сообщения -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% if rooms %}
+    <div class="row">
+        {% for room in rooms %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ room.name }}</h5>
+                    <p class="card-text">{{ room.description }}</p>
+                    <p class="card-text"><strong>Цена:</strong> {{ room.price_per_night }} ₽/ночь</p>
+                    <p class="card-text"><strong>Вместимость:</strong> {{ room.capacity }}</p>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('user.edit_room', hotel_id=hotel.id, room_id=room.id) }}"
+                            class="btn btn-sm btn-outline-secondary">Редактировать</a>
+                        <form method="POST"
+                            action="{{ url_for('user.delete_room', hotel_id=hotel.id, room_id=room.id) }}"
+                            onsubmit="return confirm('Удалить номер?');">
+                            {{ form.csrf_token }} <!-- Предполагаем CSRF -->
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>В отеле нет номеров. Добавьте новый.</p>
+    {% endif %}
+</main>
+
+{% include './components/footer.html' %}
+{% endblock %}

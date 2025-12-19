@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Мои отели{% endblock %}
+
+{% block content %}
+{% include './components/header.html' %}
+
+<main class="container py-5 my-hotels-page">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Мои отели</h1>
+        <a href="{{ url_for('user.create_hotel') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Добавить отель
+        </a>
+    </div>
+
+    <!-- Сообщения -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% if hotels %}
+    <div class="row">
+        {% for hotel in hotels %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card hotel-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0">{{ hotel.name }}</h5>
+                        <span class="badge bg-warning">Владелец</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <p class="card-text text-muted small mb-1">
+                            <i class="bi bi-geo-alt me-1"></i>{{ hotel.city }}, {{ hotel.address }}
+                        </p>
+                        {% if hotel.phone %}
+                        <p class="card-text text-muted small mb-1">
+                            <i class="bi bi-telephone me-1"></i>{{ hotel.phone }}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('user.hotel_rooms', hotel_id=hotel.id) }}"
+                            class="btn btn-sm btn-outline-primary">
+                            Номера
+                        </a>
+                        <a href="{{ url_for('user.edit_hotel', hotel_id=hotel.id) }}"
+                            class="btn btn-sm btn-outline-secondary">
+                            Редактировать
+                        </a>
+                        <form method="POST" action="{{ url_for('user.delete_hotel', hotel_id=hotel.id) }}"
+                            onsubmit="return confirm('Удалить отель?');">
+                            {{ form.csrf_token }} <!-- Предполагаем, что CSRF в base.html или добавить -->
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>У вас нет отелей. Добавьте новый.</p>
+    {% endif %}
+</main>
+
+{% include './components/footer.html' %}
+{% endblock %}

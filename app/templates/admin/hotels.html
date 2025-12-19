@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Отели — админка{% endblock %}
+
+{% block styles %}
+<style>
+    .hotel-card-admin {
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        transition: all 0.3s;
+        overflow: hidden;
+    }
+
+    .hotel-card-admin:hover {
+        border-color: #007bff;
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.1);
+        transform: translateY(-3px);
+    }
+
+    .hotel-image {
+        height: 150px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .rooms-count {
+        font-size: 0.85rem;
+    }
+
+    .city-badge {
+        background: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        font-size: 0.8rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+    }
+
+    .owner-info {
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include "components/header.html" %}
+
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Отели системы</h1>
+            <p class="text-muted mb-0">Все зарегистрированные отели</p>
+        </div>
+        <div class="text-end">
+            <div class="small text-muted">
+                Всего отелей: <span class="fw-bold">{{ hotels.total }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash сообщения -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show mb-4">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Поиск и фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.hotels_list') }}" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" name="search"
+                            placeholder="Поиск по названию или описанию..." value="{{ search_query }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" name="city">
+                        <option value="">Все города</option>
+                        {% for city in cities %}
+                        <option value="{{ city }}" {% if city_filter==city %}selected{% endif %}>
+                            {{ city }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Применить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Список отелей -->
+    {% if hotels.items %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+        {% for hotel in hotels.items %}
+        <div class="col">
+            <div class="hotel-card-admin h-100">
+                <!-- Изображение отеля -->
+                <div class="position-relative">
+                    <img src="{{ url_for('static', filename='img/hotel.webp') }}" class="hotel-image"
+                        alt="{{ hotel.name }}">
+                    <span class="position-absolute top-0 end-0 m-2 city-badge">
+                        {{ hotel.city }}
+                    </span>
+                </div>
+
+                <div class="p-3">
+                    <!-- Название и информация -->
+                    <h5 class="mb-2">{{ hotel.name }}</h5>
+
+                    {% if hotel.description %}
+                    <p class="small text-muted mb-3">
+                        {{ hotel.description|truncate(100) }}
+                    </p>
+                    {% endif %}
+
+                    <!-- Адрес и контакты -->
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1">
+                            <i class="bi bi-geo-alt me-1"></i>{{ hotel.address }}
+                        </div>
+                        {% if hotel.phone %}
+                        <div class="small text-muted mb-1">
+                            <i class="bi bi-telephone me-1"></i>{{ hotel.phone }}
+                        </div>
+                        {% endif %}
+                        {% if hotel.email %}
+                        <div class="small text-muted">
+                            <i class="bi bi-envelope me-1"></i>{{ hotel.email }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Владелец -->
+                    <div class="owner-info mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted">Владелец:</span>
+                                <div class="fw-bold">
+                                    {{ hotel.owner.full_name if hotel.owner else '—' }}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary rooms-count">
+                                    <i class="bi bi-door-closed me-1"></i>{{ hotel.rooms|length }} номеров
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Дополнительная информация -->
+                    <div class="small text-muted">
+                        <div>
+                            <i class="bi bi-calendar me-1"></i>
+                            Создан: {{ hotel.created_at.strftime('%d.%m.%Y') if hotel.created_at else '—' }}
+                        </div>
+                        <div>
+                            <i class="bi bi-arrow-clockwise me-1"></i>
+                            Обновлен: {{ hotel.updated_at.strftime('%d.%m.%Y') if hotel.updated_at else '—' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="mb-3">
+                <i class="bi bi-building display-4 text-muted"></i>
+            </div>
+            <h5 class="text-muted">Отели не найдены</h5>
+            {% if search_query or city_filter %}
+            <p class="text-muted">Попробуйте изменить условия поиска</p>
+            {% else %}
+            <p class="text-muted">В системе пока нет отелей</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Пагинация -->
+    {% if hotels.pages > 1 %}
+    <div class="card">
+        <div class="card-body py-3">
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if hotels.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="{{ url_for('admin.hotels_list', page=hotels.prev_num, search=search_query, city=city_filter) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in hotels.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == hotels.page %}active{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('admin.hotels_list', page=page_num, search=search_query, city=city_filter) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if hotels.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="{{ url_for('admin.hotels_list', page=hotels.next_num, search=search_query, city=city_filter) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <div class="text-center mt-2 text-muted small">
+                Показано {{ hotels.items|length }} из {{ hotels.total }} отелей
+                {% if search_query %}
+                по запросу "{{ search_query }}"
+                {% endif %}
+                {% if city_filter %}
+                в городе "{{ city_filter }}"
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</main>
+
+{% include "components/footer.html" %}
+{% endblock %}

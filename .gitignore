@@ -1,0 +1,42 @@
+# 1. СЕКРЕТЫ И НАСТРОЙКИ (НИКОГДА НЕ КОММИТИТЬ!)
+.env
+.env.local
+*.key
+*.pem
+app.ini  # если там есть секреты
+
+# 2. ПАПКИ СРЕДЫ И КЭШ PYTHON
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# 3. СИСТЕМНЫЕ И IDE ФАЙЛЫ
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 4. ЛОГИ И ВРЕМЕННЫЕ ФАЙЛЫ
+*.log
+logs/
+instance/  # экземпляр Flask
+
+# 5. ФАЙЛЫ БАЗЫ ДАННЫХ (если используете SQLite локально)
+*.db
+*.sqlite3
+
+# 6. СОБРАННЫЕ СТАТИЧЕСКИЕ ФАЙЛЫ И ДИСТРИБУТИВЫ
+/app/static/dist/
+build/
+dist/
+*.egg-info/
+
+# 7. UPLOADS (загруженные пользователями файлы - обычно не комитят)
+app/static/upload/*
+!app/static/upload/.gitkeep  # пустой файл, чтобы папка сохранилась в репозитории

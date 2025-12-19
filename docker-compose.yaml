@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    volumes:
+      - ~/.pg/pg_data/flask-hotel:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - "54321:5432"
+    environment:
+      POSTGRES_USER: hotel_app_user
+      POSTGRES_PASSWORD: hotelDB
+      POSTGRES_DB: hotel_booking_db
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  flask:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: flask
+    volumes:
+      - ~/.uploads/images/flask-hotel:/app/static/upload
+      - ./app.ini:/app/app.ini # Добавьте эту строку
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=hotel_app_user
+      - POSTGRES_PASSWORD=hotelDB
+      - POSTGRES_DB=hotel_booking_db
+    depends_on:
+      - postgres
+    expose:
+      - 8080
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - flask
+    volumes:
+      - ./app/static:/app/static
+      - ~/.uploads/images/flask-hotel:/app/static/upload

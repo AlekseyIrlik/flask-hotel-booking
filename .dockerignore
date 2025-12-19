@@ -1,0 +1,83 @@
+# Игнорировать системные файлы
+.git
+.gitignore
+.gitattributes
+.DS_Store
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# Игнорировать Python кэш и виртуальные окружения
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+.pytest_cache/
+.mypy_cache/
+
+# Игнорировать логи
+*.log
+logs/
+log/
+
+# Игнорировать IDE файлы
+.vscode/
+.idea/
+*.swp
+*.swo
+.project
+*.iml
+.settings/
+.classpath
+
+# Игнорировать временные файлы
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Игнорировать конфигурационные файлы разработки
+.env
+.env.local
+.env.development
+.flaskenv
+.dockerignore
+docker-compose.yml
+docker-compose.override.yml
+
+# Игнорировать документацию и тестовые данные
+docs/
+coverage/
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Игнорировать сборки и дистрибутивы
+build/
+dist/
+*.egg-info/
+*.egg
+.cache/
+
+# Игнорировать специфичные для разработки файлы
+migrations/versions/  # миграции будут создаваться внутри контейнера
+migrations/script.py.mako  # шаблон миграций
+instance/  # экземпляр приложения
+uploaded_files/  # загруженные файлы (если используются)
+
+# Исключения для production
+!requirements.txt
+!requirements-prod.txt

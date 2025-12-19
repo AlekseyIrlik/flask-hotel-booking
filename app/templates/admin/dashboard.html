@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block title %}Админка{% endblock %}
+
+{% block styles %}
+<style>
+    .stat-card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.8;
+    }
+
+    .stat-number {
+        font-size: 2.2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .recent-table {
+        font-size: 0.9rem;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .quick-action {
+        border-radius: 8px;
+        padding: 1rem;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s;
+    }
+
+    .quick-action:hover {
+        background: #fff;
+        border-color: #007bff;
+        text-decoration: none;
+    }
+
+    .action-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include "components/header.html" %}
+
+<main class="container py-4">
+    <!-- Flash сообщения -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show mb-4">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Панель администратора</h1>
+            <p class="text-muted mb-0">Обзор системы и быстрый доступ</p>
+        </div>
+        <div class="text-end">
+            <small class="text-muted d-block">Последний вход: {{ current_user.updated_at.strftime('%d.%m.%Y %H:%M') if
+                current_user.updated_at else '—' }}</small>
+            <small class="text-muted">Роль: <span class="badge bg-danger">Администратор</span></small>
+        </div>
+    </div>
+
+    <!-- Статистика в карточках -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card stat-card border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-label">Пользователи</div>
+                            <div class="stat-number text-primary">{{ stats.total_users }}</div>
+                            <div class="small text-muted mt-1">
+                                +{{ stats.recent_users }} за неделю
+                            </div>
+                        </div>
+                        <div class="stat-icon text-primary">
+                            <i class="bi bi-people"></i>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.users_list') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-label">Отели</div>
+                            <div class="stat-number text-success">{{ stats.total_hotels }}</div>
+                            <div class="small text-muted mt-1">
+                                {{ stats.hotel_owners }} владельцев
+                            </div>
+                        </div>
+                        <div class="stat-icon text-success">
+                            <i class="bi bi-building"></i>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.hotels_list') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-label">Бронирования</div>
+                            <div class="stat-number text-warning">{{ stats.total_bookings }}</div>
+                            <div class="small text-muted mt-1">
+                                +{{ stats.recent_bookings }} за неделю
+                            </div>
+                        </div>
+                        <div class="stat-icon text-warning">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.bookings_list') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card border-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-label">На проверке</div>
+                            <div class="stat-number text-info">{{ stats.pending_bookings }}</div>
+                            <div class="small text-muted mt-1">
+                                Требуют внимания
+                            </div>
+                        </div>
+                        <div class="stat-icon text-info">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.bookings_list', status='pending') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Левая колонка: Быстрые действия и последние бронирования -->
+        <div class="col-lg-8">
+            <!-- Последние бронирования -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Последние бронирования</h5>
+                    <a href="{{ url_for('admin.bookings_list') }}" class="btn btn-sm btn-outline-primary">
+                        Все бронирования
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 recent-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Пользователь</th>
+                                    <th>Отель</th>
+                                    <th>Даты</th>
+                                    <th>Стоимость</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in stats.recent_booking_list %}
+                                <tr>
+                                    <td class="text-muted">#{{ booking.id }}</td>
+                                    <td>
+                                        <small>{{ booking.user.full_name if booking.user else '—' }}</small>
+                                    </td>
+                                    <td>
+                                        <small>{{ booking.room.hotel.name if booking.room else '—' }}</small>
+                                    </td>
+                                    <td>
+                                        <small>{{ booking.check_in.strftime('%d.%m') }} → {{
+                                            booking.check_out.strftime('%d.%m') }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ booking.total_price }} ₽</strong>
+                                    </td>
+                                    <td>
+                                        {% if booking.status == 'confirmed' %}
+                                        <span class="badge bg-success status-badge">Подтверждено</span>
+                                        {% elif booking.status == 'cancelled' %}
+                                        <span class="badge bg-danger status-badge">Отменено</span>
+                                        {% elif booking.status == 'pending' %}
+                                        <span class="badge bg-warning status-badge">Ожидание</span>
+                                        {% elif booking.status == 'completed' %}
+                                        <span class="badge bg-info status-badge">Завершено</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-3 text-muted">
+                                        <i class="bi bi-calendar-x me-2"></i>Нет бронирований
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Быстрые действия -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="{{ url_for('admin.users_list') }}"
+                                class="d-block quick-action text-decoration-none">
+                                <div class="action-icon bg-primary bg-opacity-10 text-primary">
+                                    <i class="bi bi-person-plus"></i>
+                                </div>
+                                <div class="fw-bold text-dark">Добавить пользователя</div>
+                                <small class="text-muted">Создание нового аккаунта</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('admin.bookings_list', status='pending') }}"
+                                class="d-block quick-action text-decoration-none">
+                                <div class="action-icon bg-warning bg-opacity-10 text-warning">
+                                    <i class="bi bi-clock"></i>
+                                </div>
+                                <div class="fw-bold text-dark">Проверить бронирования</div>
+                                <small class="text-muted">{{ stats.pending_bookings }} ожидают</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('admin.dashboard') }}"
+                                class="d-block quick-action text-decoration-none">
+                                <div class="action-icon bg-info bg-opacity-10 text-info">
+                                    <i class="bi bi-graph-up"></i>
+                                </div>
+                                <div class="fw-bold text-dark">Статистика</div>
+                                <small class="text-muted">Аналитика и отчеты</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: Статус системы и информация -->
+        <div class="col-lg-4">
+            <!-- Статус системы -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Статус системы</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Подтвержденные бронирования:</span>
+                            <span class="fw-bold">{{ stats.confirmed_bookings }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success"
+                                style="width: {{ (stats.confirmed_bookings / stats.total_bookings * 100) if stats.total_bookings > 0 else 0 }}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Отмененные бронирования:</span>
+                            <span class="fw-bold">{{ stats.cancelled_bookings }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-danger"
+                                style="width: {{ (stats.cancelled_bookings / stats.total_bookings * 100) if stats.total_bookings > 0 else 0 }}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Владельцы отелей:</span>
+                            <span class="fw-bold">{{ stats.hotel_owners }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-primary"
+                                style="width: {{ (stats.hotel_owners / stats.total_users * 100) if stats.total_users > 0 else 0 }}%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Информация о безопасности -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Безопасность</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success small mb-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>CSRF защита активна</strong><br>
+                        Все формы защищены токенами
+                    </div>
+
+                    <div class="alert alert-info small mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Рекомендации</strong><br>
+                        • Регулярно меняйте пароль<br>
+                        • Используйте сложные пароли<br>
+                        • Выходите из системы после работы
+                    </div>
+
+                    <div class="text-center">
+                        <a href="{{ url_for('user.logout') }}" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-box-arrow-right me-1"></i>Выйти из системы
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include "components/footer.html" %}
+{% endblock %}

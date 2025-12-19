@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}{{ hotel.name }}{% endblock %}
+
+{% block styles %}
+<style>
+    .hotel-hero {
+        height: 300px;
+        object-fit: cover;
+        border-radius: var(--btn-radius);
+    }
+
+    .room-card {
+        border: 1px solid var(--border);
+        border-radius: var(--btn-radius);
+        transition: all var(--transition-time);
+        height: 100%;
+    }
+
+    .room-card:hover {
+        border-color: var(--orange);
+        box-shadow: 0 5px 15px rgba(255, 109, 0, 0.1);
+    }
+
+    .amenity-badge {
+        background: var(--gray-light);
+        padding: 0.3em 0.8em;
+        border-radius: 20px;
+        font-size: 0.85em;
+        margin-right: 0.5em;
+        margin-bottom: 0.5em;
+        display: inline-block;
+    }
+
+    .capacity-badge {
+        background: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include './components/header.html' %}
+
+<main class="container py-5">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.catalog') }}">Каталог</a></li>
+            <li class="breadcrumb-item active">{{ hotel.name|truncate(30) }}</li>
+        </ol>
+    </nav>
+
+    <!-- Заголовок и фото -->
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <h1 class="mb-3">{{ hotel.name }}</h1>
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <span class="city-badge" style="background: rgba(255, 109, 0, 0.1); color: var(--orange);">
+                    <i class="bi bi-geo-alt me-1"></i>{{ hotel.city }}
+                </span>
+                {% if hotel.phone %}
+                <span class="text-muted">
+                    <i class="bi bi-telephone me-1"></i>{{ hotel.phone }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Основная информация -->
+        <div class="col-lg-8">
+            <!-- Фото (заглушка) -->
+            <div class="mb-4">
+                <img src="{{ url_for('static', filename='img/hotel.webp') }}" alt="{{ hotel.name }}"
+                    class="hotel-hero w-100">
+            </div>
+
+            <!-- Описание -->
+            {% if hotel.description %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Об отеле</h5>
+                    <p class="card-text">{{ hotel.description }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Номера -->
+            <h3 class="mb-4">Доступные номера</h3>
+
+            {% if rooms %}
+            <div class="row g-4">
+                {% for room in rooms %}
+                <div class="col-md-6">
+                    <div class="card room-card h-100">
+                        {% if room.image_url %}
+                        <img src="{{ room.image_url }}" class="card-img-top" alt="{{ room.name }}"
+                            style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                            style="height: 200px;">
+                            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        {% endif %}
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ room.name }}</h5>
+                            <p class="card-text text-muted small flex-grow-1">
+                                {{ room.description|truncate(150) }}
+                            </p>
+
+                            <!-- Удобства -->
+                            {% if room.amenities %}
+                            <div class="my-3">
+                                <p class="small text-muted mb-2">Удобства в номере:</p>
+                                <div>
+                                    {% for amenity in room.amenities.split(',') %}
+                                    <span class="amenity-badge">{{ amenity.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <span class="capacity-badge amenity-badge">
+                                            <i class="bi bi-people me-1"></i>До {{ room.capacity }} чел.
+                                        </span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="price-tag">{{ room.price_per_night }} ₽</div>
+                                        <p class="text-muted small mb-0">за ночь</p>
+                                    </div>
+                                </div>
+
+                                <a href="{{ url_for('main.book_room', hotel_id=hotel.id, room_id=room.id) }}"
+                                    class="btn btn-primary w-100">
+                                    <i class="bi bi-calendar-check me-2"></i>Забронировать
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                В этом отеле пока нет доступных номеров.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Боковая панель с контактами -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Контакты и информация</h5>
+
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <strong><i class="bi bi-geo-alt text-primary me-2"></i>Адрес:</strong><br>
+                            {{ hotel.address }}
+                        </li>
+                        <li class="mb-3">
+                            <strong><i class="bi bi-building text-primary me-2"></i>Город:</strong><br>
+                            {{ hotel.city }}
+                        </li>
+                        {% if hotel.phone %}
+                        <li class="mb-3">
+                            <strong><i class="bi bi-telephone text-primary me-2"></i>Телефон:</strong><br>
+                            {{ hotel.phone }}
+                        </li>
+                        {% endif %}
+                        {% if hotel.email %}
+                        <li class="mb-3">
+                            <strong><i class="bi bi-envelope text-primary me-2"></i>Email:</strong><br>
+                            <a href="mailto:{{ hotel.email }}">{{ hotel.email }}</a>
+                        </li>
+                        {% endif %}
+                        <li class="mb-3">
+                            <strong><i class="bi bi-door-closed text-primary me-2"></i>Количество номеров:</strong><br>
+                            {{ rooms|length }}
+                        </li>
+                    </ul>
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.catalog') }}" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="bi bi-arrow-left me-2"></i>Вернуться к поиску
+                        </a>
+                        {% if current_user.is_authenticated and current_user.is_hotel_owner and hotel.owner_id ==
+                        current_user.id %}
+                        <a href="{{ url_for('user.hotel_rooms', hotel_id=hotel.id) }}"
+                            class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-gear me-2"></i>Управление номерами
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include './components/footer.html' %}
+{% endblock %}
