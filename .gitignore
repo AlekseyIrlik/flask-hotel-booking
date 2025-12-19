@@ -40,3 +40,5 @@ dist/
 # 7. UPLOADS (загруженные пользователями файлы - обычно не комитят)
 app/static/upload/*
 !app/static/upload/.gitkeep  # пустой файл, чтобы папка сохранилась в репозитории
+
+scaner.py

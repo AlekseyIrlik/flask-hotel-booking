@@ -21,10 +21,17 @@ class User(UserMixin, db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
 
-    role = db.Column(db.Enum(UserRole), default=UserRole.USER, nullable=False)
+    # Используем db.Enum с явным указанием значений
+    role = db.Column(
+        db.Enum(UserRole, values_callable=lambda obj: [e.value for e in obj]),
+        default=UserRole.USER,
+        nullable=False
+    )
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
