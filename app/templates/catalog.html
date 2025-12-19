@@ -4,45 +4,100 @@
 
 {% block styles %}
 <style>
-    .search-card {
-        background: var(--gray-light);
-        border-radius: var(--btn-radius);
-        padding: 2rem;
-        margin-bottom: 2rem;
-        border: 1px solid var(--border);
-    }
-
+    /* Карточка отеля */
     .hotel-card {
-        transition: all var(--transition-time);
         border: 1px solid var(--border);
-        height: 100%;
         border-radius: var(--btn-radius);
+        transition: all var(--transition-time);
+        height: 100%;
         overflow: hidden;
+        background: white;
     }
 
     .hotel-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        border-color: var(--orange-light);
+        border-color: var(--orange);
+        box-shadow: 0 8px 25px rgba(255, 109, 0, 0.1);
     }
 
     .hotel-img {
-        height: 220px;
+        height: 200px;
         object-fit: cover;
         width: 100%;
+        border-bottom: 1px solid var(--border);
     }
 
-    .price-tag {
-        color: var(--orange);
-        font-size: 1.5rem;
-        font-weight: 800;
+    .hotel-body {
+        padding: 1.25rem;
     }
 
-    .city-badge {
+    /* Цена и кнопка */
+    .hotel-footer {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid var(--border);
+        background: var(--gray-light);
+    }
+
+    .price-badge {
+        background: var(--orange);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: var(--btn-radius);
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    /* Поиск */
+    .search-container {
+        background: white;
+        border-radius: var(--btn-radius);
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-title {
+        color: var(--dark);
+        margin-bottom: 1.25rem;
+        font-weight: 600;
+    }
+
+    /* Заголовок каталога */
+    .catalog-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border);
+    }
+
+    /* Пустой каталог */
+    .empty-catalog {
+        background: var(--gray-light);
+        border-radius: var(--btn-radius);
+        padding: 3rem 2rem;
+        text-align: center;
+        border: 1px dashed var(--border);
+    }
+
+    /* Метка города */
+    .city-tag {
+        display: inline-block;
         background: rgba(255, 109, 0, 0.1);
         color: var(--orange);
-        font-weight: 600;
-        padding: 0.35em 0.65em;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .hotel-card {
+            margin-bottom: 1rem;
+        }
+
+        .hotel-img {
+            height: 180px;
+        }
     }
 </style>
 {% endblock %}
@@ -50,99 +105,162 @@
 {% block content %}
 {% include './components/header.html' %}
 
-<main class="container py-5">
-    <h1 class="mb-4">Найдите идеальный отель</h1>
+<main class="container py-4">
+    <!-- Заголовок -->
+    <div class="catalog-header">
+        <h1 class="display-6 fw-bold mb-2">Каталог отелей</h1>
+        <p class="text-muted">Найдите идеальное место для отдыха или командировки</p>
+    </div>
 
     <!-- Поиск -->
-    <div class="card search-card border-0 shadow-sm">
-        <div class="card-body">
-            <form method="GET" action="{{ url_for('main.catalog') }}" class="row g-3">
-                <div class="col-md-8">
-                    <label class="form-label fw-bold">Куда вы хотите поехать?</label>
-                    <input type="text" name="city" class="form-control form-control-lg"
-                        placeholder="Например: Москва, Сочи, Санкт-Петербург..." value="{{ city }}">
+    <div class="search-container">
+        <h2 class="search-title h5">Поиск отелей</h2>
+        <form method="GET" action="{{ url_for('main.catalog') }}" class="row g-3 align-items-end">
+            <div class="col-md-8">
+                <div class="mb-2">
+                    <label class="form-label text-muted small">Город или регион</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="bi bi-geo-alt text-muted"></i>
+                        </span>
+                        <input type="text" name="city" class="form-control border-start-0"
+                            placeholder="Введите город..." value="{{ city }}" style="padding-left: 0;">
+                    </div>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <i class="bi bi-search me-2"></i>Найти отели
-                    </button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-2"></i>Найти
+                </button>
+            </div>
+        </form>
     </div>
 
     <!-- Результаты -->
     <div class="row">
-        <div class="col-12 mb-4">
-            <h2 class="h4">
-                {% if city %}
-                Отели в городе <span class="city-badge">{{ city }}</span>
-                {% else %}
-                Все отели
-                {% endif %}
-                <span class="text-muted fs-6">({{ hotels|length }})</span>
-            </h2>
+        <div class="col-12 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">
+                    {% if city %}
+                    Отели в городе <strong class="text-primary">{{ city }}</strong>
+                    {% else %}
+                    Все отели
+                    {% endif %}
+                </h2>
+                <span class="badge bg-light text-dark">
+                    {{ hotels|length }} {% if hotels|length == 1 %}отель{% elif 2 <= hotels|length <=4 %}отеля{% else
+                        %}отелей{% endif %} </span>
+            </div>
         </div>
 
         {% if hotels %}
         {% for hotel in hotels %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card hotel-card h-100">
-                <!-- Фото отеля (заглушка или из БД) -->
-                <img src="{{ url_for('static', filename='img/hotel.webp') }}" class="card-img-top hotel-img"
-                    alt="{{ hotel.name }}">
-
-                <div class="card-body d-flex flex-column">
-                    <div class="mb-2">
-                        <span class="city-badge">{{ hotel.city }}</span>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="hotel-card">
+                <!-- Фото -->
+                <div class="position-relative">
+                    <img src="{{ url_for('static', filename='img/hotel.webp') }}" class="hotel-img"
+                        alt="{{ hotel.name }}">
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <span class="city-tag">
+                            <i class="bi bi-geo-alt me-1"></i>{{ hotel.city }}
+                        </span>
                     </div>
+                </div>
 
-                    <h5 class="card-title">{{ hotel.name }}</h5>
-
-                    <p class="card-text text-muted small flex-grow-1">
-                        <i class="bi bi-geo-alt me-1"></i>{{ hotel.address }}
+                <!-- Информация -->
+                <div class="hotel-body">
+                    <h3 class="h6 fw-bold mb-2">{{ hotel.name }}</h3>
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-pin-map me-1"></i>{{ hotel.address }}
                     </p>
-
                     {% if hotel.description %}
-                    <p class="card-text small mb-3">{{ hotel.description|truncate(120) }}</p>
+                    <p class="small text-muted mb-3">
+                        {{ hotel.description|truncate(100) }}
+                    </p>
                     {% endif %}
 
-                    <div class="mt-auto">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                {% if hotel.rooms %}
-                                {% set min_price = hotel.rooms|map(attribute='price_per_night')|min %}
-                                <span class="price-tag">от {{ min_price }} ₽</span>
-                                <p class="text-muted small mb-0">за ночь</p>
-                                {% else %}
-                                <span class="text-muted">Нет номеров</span>
-                                {% endif %}
-                            </div>
-                            <a href="{{ url_for('main.hotel_detail', hotel_id=hotel.id) }}"
-                                class="btn btn-outline-primary">
-                                Выбрать номер
-                            </a>
+                    <div class="d-flex align-items-center text-muted small">
+                        {% if hotel.rooms %}
+                        <span class="me-3">
+                            <i class="bi bi-door-closed me-1"></i>{{ hotel.rooms|length }} номеров
+                        </span>
+                        {% endif %}
+                        {% if hotel.phone %}
+                        <span>
+                            <i class="bi bi-telephone me-1"></i>{{ hotel.phone }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Цена и кнопка -->
+                <div class="hotel-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if hotel.rooms %}
+                            {% set min_price = hotel.rooms|map(attribute='price_per_night')|min %}
+                            <span class="price-badge">от {{ min_price }} ₽</span>
+                            <p class="text-muted small mb-0 mt-1">за ночь</p>
+                            {% else %}
+                            <span class="text-muted small">Нет доступных номеров</span>
+                            {% endif %}
                         </div>
+                        <a href="{{ url_for('main.hotel_detail', hotel_id=hotel.id) }}"
+                            class="btn btn-outline-primary btn-sm">
+                            Подробнее
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
         {% endfor %}
         {% else %}
-        <div class="col-12 text-center py-5">
-            <i class="bi bi-building display-1 text-muted"></i>
-            <h4 class="my-3">Отелей не найдено</h4>
-            <p class="text-muted">
-                {% if city %}
-                Попробуйте изменить критерии поиска
-                {% else %}
-                В системе пока нет отелей
+        <div class="col-12">
+            <div class="empty-catalog">
+                <div class="mb-4">
+                    <i class="bi bi-building display-5 text-muted opacity-50"></i>
+                </div>
+                <h3 class="h5 mb-3">
+                    {% if city %}
+                    Отелей в городе "{{ city }}" не найдено
+                    {% else %}
+                    В системе пока нет отелей
+                    {% endif %}
+                </h3>
+                <p class="text-muted mb-4">
+                    {% if city %}
+                    Попробуйте изменить условия поиска или добавьте отель
+                    {% else %}
+                    Станьте владельцем отеля и добавьте первый отель в систему
+                    {% endif %}
+                </p>
+                {% if current_user.is_hotel_owner %}
+                <a href="{{ url_for('user.create_hotel') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Добавить отель
+                </a>
                 {% endif %}
-            </p>
+            </div>
         </div>
         {% endif %}
     </div>
 </main>
 
 {% include './components/footer.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Простая валидация формы поиска
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchForm = document.querySelector('form[method="GET"]');
+        const searchInput = searchForm.querySelector('input[name="city"]');
+
+        searchForm.addEventListener('submit', function (e) {
+            if (searchInput.value.trim() === '') {
+                searchInput.value = '';
+            }
+        });
+    });
+</script>
 {% endblock %}

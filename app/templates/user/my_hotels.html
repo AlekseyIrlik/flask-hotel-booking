@@ -58,7 +58,7 @@
                         </a>
                         <form method="POST" action="{{ url_for('user.delete_hotel', hotel_id=hotel.id) }}"
                             onsubmit="return confirm('Удалить отель?');">
-                            {{ form.csrf_token }} <!-- Предполагаем, что CSRF в base.html или добавить -->
+                            <span hidden>{{ csrf_token }}</span>
                             <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
                         </form>
                     </div>
